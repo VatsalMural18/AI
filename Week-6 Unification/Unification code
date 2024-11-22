@@ -1,0 +1,98 @@
+def is_variable(x):
+    """Checks if x is a variable (assuming variables are single lowercase letters)."""
+    return isinstance(x, str) and x.islower() and len(x) == 1
+
+def occurs_check(var, term):
+    """Checks if a variable occurs in a term (used to avoid circular unification)."""
+    if var == term:
+        return True
+    if isinstance(term, tuple):  
+        return any(occurs_check(var, t) for t in term)
+    return False
+
+def unify(x, y, substitution=None):
+    """Unifies two terms x and y, applying substitutions."""
+    if substitution is None:
+        substitution = {}
+    if x == y:
+        return substitution
+
+    elif is_variable(x):
+        if x in substitution:
+            return unify(substitution[x], y, substitution)
+        elif occurs_check(x, y):
+            raise ValueError(f"Unification fails due to occurs check for {x} in {y}")
+        else:
+            substitution[x] = y
+            return substitution
+
+    elif is_variable(y):
+        return unify(y, x, substitution)
+
+    elif isinstance(x, tuple) and isinstance(y, tuple):
+        if x[0] != y[0]:
+            raise ValueError(f"Unification fails: {x[0]} != {y[0]}")
+   
+        for a, b in zip(x[1:], y[1:]):
+            substitution = unify(a, b, substitution)
+        return substitution
+   
+    else:
+        raise ValueError(f"Unification fails: {x} cannot be unified with {y}")
+
+def apply_substitution(term, substitution):
+    """Applies the substitution to the term."""
+    if isinstance(term, str):
+        return substitution.get(term, term)
+    elif isinstance(term, tuple):
+        return (term[0], *[apply_substitution(t, substitution) for t in term[1:]])
+    return term
+
+def parse_term(term_str):
+    """Parses a string representation of a term into a Python data structure."""
+    term_str = term_str.strip()
+    
+
+    if term_str.islower() and len(term_str) == 1:
+        return term_str
+    
+
+    if term_str.isalpha():
+        return term_str
+    
+
+    if term_str.startswith('f(') and term_str.endswith(')'):
+        func_str = term_str[2:-1] 
+        parts = func_str.split(',')
+        return ('f', *[parse_term(p.strip()) for p in parts])  
+    
+
+    raise ValueError(f"Invalid term format: {term_str}")
+
+def main():
+    print("Enter two terms to unify (e.g., f(x, y), f(a, b)):")
+    term1_str = input("Enter first term: ")
+    term2_str = input("Enter second term: ")
+
+    try:
+        term1 = parse_term(term1_str)
+        term2 = parse_term(term2_str)
+        
+        print(f"Unifying terms: {term1} and {term2}")
+        substitution = unify(term1, term2)
+     
+        unified_term1 = apply_substitution(term1, substitution)
+        unified_term2 = apply_substitution(term2, substitution)
+        
+        print("Unification successful!")
+        print("Substitution:", substitution)
+        print("Unified expression:")
+        print(f"Term 1 after substitution: {unified_term1}")
+        print(f"Term 2 after substitution: {unified_term2}")
+    
+    except ValueError as e:
+        print("Unification failed:", e)
+
+
+if __name__ == "__main__":
+    main()
