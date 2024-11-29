@@ -1,0 +1,55 @@
+class ForwardReasoningSystem:
+    def __init__(self):
+        self.facts = []  # List to store known facts
+        self.rules = []  # List to store rules
+    
+    def add_fact(self, fact):
+        """Add a new fact to the system."""
+        if fact not in self.facts:
+            self.facts.append(fact)
+    
+    def add_rule(self, premise, conclusion):
+        """Add a rule to the system (IF premise THEN conclusion)."""
+        self.rules.append((premise, conclusion))
+    
+    def apply_rule(self, rule):
+        """Apply a single rule to the current facts."""
+        premise, conclusion = rule
+        if all(p in self.facts for p in premise) and conclusion not in self.facts:
+            self.facts.append(conclusion)
+            return True  # A new fact was added
+        return False  # No new facts were added
+    
+    def forward_reasoning(self):
+        """Iterate through rules and apply forward reasoning."""
+        new_facts = True
+        while new_facts:
+            new_facts = False
+            for rule in self.rules:
+                if self.apply_rule(rule):
+                    new_facts = True  # If a new fact was added, continue reasoning
+        return self.facts
+
+
+# Example usage
+
+# Create the forward reasoning system
+system = ForwardReasoningSystem()
+
+# Add initial facts
+system.add_fact("It is raining")
+system.add_fact("The ground is wet")
+
+# Add inference rules
+system.add_rule(["It is raining"], "The ground is wet")  # IF raining THEN wet ground
+system.add_rule(["The ground is wet"], "People might slip")  # IF wet ground THEN slip
+
+# Run forward reasoning
+all_facts = system.forward_reasoning()
+
+# Display the results
+print("Final Facts deduced:")
+for fact in all_facts:
+    print(fact)
+print("---------------------")
+print("Vatsal - 1BM22CS323")
