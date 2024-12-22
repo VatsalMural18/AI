@@ -1,0 +1,42 @@
+from itertools import combinations
+ def resolve(clause1, clause2): 
+for literal in clause1:
+ complementary_literal = f"~{literal}" if not literal.startswith("~") else literal[1:] 
+if complementary_literal in clause2:
+ new_clause = (clause1 | clause2) - {literal, complementary_literal} 
+return new_clause
+ return None
+ def resolution(knowledge_base, query): 
+# Convert the knowledge base into a set of clauses
+ clauses = [set(clause.split()) for clause in knowledge_base] 
+# Add the negation of the query 
+clauses.append(set(f"~{query}".split()))
+ # Perform resolution 
+while True:
+ new_clauses = []
+for (ci, cj) in combinations(clauses, 2):
+ resolvent = resolve(ci, cj) 
+if resolvent is not None:
+ if not resolvent: # Empty set means the query is proven 
+return True
+ new_clauses.append(resolvent)
+ # Check if new clauses introduce anything novel
+ if not any(new_clause not in clauses for new_clause in new_clauses): 
+return False # No new information, query cannot be proven
+ # Add new clauses to the knowledge base 
+for new_clause in new_clauses:
+ if new_clause not in clauses: 
+clauses.append(new_clause) 
+# Example usage 
+knowledge_base = [
+ "A",
+ "~A B",
+ "~B C", 
+"~C D"
+ ]
+ query = "D"
+ if resolution(knowledge_base, query): 
+print("Query is proven using resolution.")
+ else:
+ print("Query cannot be proven using resolution.") 
+print("Vatsal - 1BM22CS323")
